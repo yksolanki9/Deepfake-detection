@@ -228,11 +228,11 @@ def triplet_loss_adapted_from_tf(y_true, y_pred):
 	return semi_hard_triplet_loss_distance
 
 def triplets_loss(y_true, y_pred):
-	
+
 #     embeddings = K.cast(embeddings, 'float32')
 #     with sess.as_default():
 #         print(embeddings.eval())
-	
+
 	embeddings = y_pred
 	anchor_positive = embeddings[:10]
 	negative = embeddings[10:]
@@ -261,7 +261,7 @@ def triplets_loss(y_true, y_pred):
 
 #     with K.get_session().as_default():
 #             print(loss.eval())
-			
+
 	return loss
 
 def create_base_network(image_input_shape, embedding_size):
