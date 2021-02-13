@@ -1,9 +1,13 @@
+# !pip install opencv-python
+# # !apt install libgl1-mesa-glx
+# # !apt-get install ffmpeg libsm6 libxext6 -y
+
 import cv2
 from os import makedirs
 from os.path import join, exists
 import glob
 
-training_videos_folder = ["../train/0", "../train/1"]
+training_videos_folder = ["/scratch/ysolanki/FaceForensics++/train/0", "/scratch/ysolanki/FaceForensics++/train/1"]
 
 for folder in training_videos_folder:
     videos_path = glob.glob(join(folder, "*.mp4"))
@@ -38,6 +42,8 @@ for folder in training_videos_folder:
 
         cap.release()
 
-        if counter % 100 == 0:
+        if counter % 10 == 0:
             print("Number of videos done:", counter)
         counter += 1
+
+

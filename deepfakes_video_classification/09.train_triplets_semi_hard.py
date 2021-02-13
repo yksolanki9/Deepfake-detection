@@ -1,6 +1,8 @@
 import argparse
 import pickle
 
+# !pip install keras
+
 ## for Model definition/training
 from keras.models import Model, load_model
 from keras.layers import Input, Flatten, Dense, concatenate,  Dropout
@@ -8,7 +10,7 @@ from keras.optimizers import Adam, Nadam
 from keras.applications.xception import Xception
 # from keras.applications.resnet_v2 import ResNet50V2
 from keras import backend as K
-# from keras.utils import plot_model
+from keras.utils import plot_model
 from keras.callbacks import ModelCheckpoint
 from keras.layers.pooling import MaxPooling2D
 
@@ -17,6 +19,13 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.framework import dtypes
 import tensorflow as tf
+
+# !pip install sklearn
+
+# !pip install seaborn
+
+# !pip install pydot
+# !pip install graphviz
 
 ## for visualizing 
 import matplotlib.pyplot as plt, numpy as np
@@ -216,6 +225,7 @@ def triplet_loss_adapted_from_tf(y_true, y_pred):
 	# In lifted-struct, the authors multiply 0.5 for upper triangular
 	#   in semihard, they take all positive pairs except the diagonal.
 	num_positives = math_ops.reduce_sum(mask_positives)
+# 	tf.print('No. of positives is ', num_positives)
 
 	semi_hard_triplet_loss_distance = math_ops.truediv(
 		math_ops.reduce_sum(
@@ -228,7 +238,6 @@ def triplet_loss_adapted_from_tf(y_true, y_pred):
 	return semi_hard_triplet_loss_distance
 
 def triplets_loss(y_true, y_pred):
-
 #     embeddings = K.cast(embeddings, 'float32')
 #     with sess.as_default():
 #         print(embeddings.eval())
@@ -258,12 +267,13 @@ def triplets_loss(y_true, y_pred):
 	
 	distance = (a_p_distance - hard_negative + 0.2)
 	loss = K.mean(K.maximum(distance, 0.0))/(2.)
-
-#     with K.get_session().as_default():
-#             print(loss.eval())
-
+    
+     # with K.get_session().as_default(): 
+#             print(loss.eval())  
 	return loss
 
+
+# +
 def create_base_network(image_input_shape, embedding_size):
 	"""
 	Base network to be shared (eq. to feature extraction).
@@ -277,21 +287,40 @@ def create_base_network(image_input_shape, embedding_size):
 	x = Dropout(0.1)(x)
 	y = Dense(embedding_size)(x)
 	base_network = Model(main_input, y)
+    
+#     After setting all dropouts to 0.2, I am getting nan loss and val_loss = 1
 
 	return base_network
+# -
+
+from keras.callbacks import Callback
+class TestCallback(Callback):
+    def __init__(self, test_data):
+        self.test_data = test_data
+
+    def on_batch_end(self, batch, logs={}):
+        print()  # just a dummy print command
 
 
+# +
+class Args:
+    train_flag = "False"
+    epochs = 20
+    
+args = Args()
+
+# +
 if __name__ == "__main__":
 	# in case this scriot is called from another file, let's make sure it doesn't start training the network...
 
 	# construct the argument parse and parse the arguments
-	ap = argparse.ArgumentParser()
-	ap.add_argument("-f", "--train_flag", required=True, type=str,
-		help="Do you want to train the model??")
-	ap.add_argument("-e", "--epochs", type=int, default=10)
-	args = ap.parse_args()
+# 	ap = argparse.ArgumentParser()
+# 	ap.add_argument("-f", "--train_flag", required=True, type=str,
+# 		help="Do you want to train the model??")
+# 	ap.add_argument("-e", "--epochs", type=int, default=10)
+# 	args = ap.parse_args()
 
-	batch_size = 32
+	batch_size = 256
 	epochs = args.epochs
 	# train_flag = args["train_flag"]  # either     True or False
 	train_flag = args.train_flag
@@ -304,8 +333,8 @@ if __name__ == "__main__":
 	step = 10
 
 	# The data, split between train and test sets
-	train_data = np.load("embs_data_25f.npy")
-	train_label = np.load("embs_label_25f.npy")
+	train_data = np.load("face_embeddings/train_data_facenet_embeddings.npy")
+	train_label = np.load("face_embeddings/train_label_facenet_embeddings.npy")
 	# train_label = train_label.argmax(1)
 	print("Dataset Loaded...")
 
@@ -313,8 +342,13 @@ if __name__ == "__main__":
 												  test_size=0.1, stratify=train_label,
 												  random_state=34)
 	print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
-
+	print(type(x_train), type(y_train))
+    
+	x_train = x_train.squeeze()
+	x_test = x_test.squeeze()
 	input_image_shape = (512, )
+    
+# 	print(np.where(np.isnan(x_train)))
 
 	x_val = x_test[:2000, :]
 	y_val = y_test[:2000]
@@ -343,6 +377,7 @@ if __name__ == "__main__":
 
 		# train session
 		optimizer = Adam(lr=3e-4)
+# 		optimizer = Adam(lr=1e-6)
 
 		model.compile(loss=triplet_loss_adapted_from_tf,
 					  optimizer=optimizer)
@@ -358,7 +393,7 @@ if __name__ == "__main__":
 			batch_size=batch_size,
 			epochs=epochs,
 			validation_data=([x_val, y_val], dummy_gt_val)
-			# callbacks=callbacks_list
+# 			callbacks=[TestCallback((x_test, y_test))]
 			)
 		model.save("triplets_semi_hard.hdf5")
 		
@@ -481,3 +516,14 @@ if __name__ == "__main__":
 			plt.savefig('final learning')
 
 			# plt.show()
+# -
+
+import numpy as np
+td = np.asarray(np.load("face_embeddings/train_data_facenet_embeddings.npy"))
+print(type(td))
+ld = np.asarray(np.load("face_embeddings/train_label_facenet_embeddings.npy"))
+print(type(ld))
+print(td.shape)
+print(ld.shape)
+
+

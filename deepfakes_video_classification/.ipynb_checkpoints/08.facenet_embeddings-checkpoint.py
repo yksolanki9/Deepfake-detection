@@ -1,12 +1,12 @@
+pip install keras_facenet
+
 import numpy as np
 from keras.preprocessing import image
 import pandas as pd
 from keras_facenet import FaceNet
 
-# +
 # Read csv file contain image face paths
-# data = pd.read_csv("train_faces_160.csv")
-# -
+data = pd.read_csv("train_face/train_faces_25frames.csv")
 
 images = data["images_list"]
 labels = data["label"]
@@ -18,13 +18,17 @@ count = 0
 embedder = FaceNet()
 
 
+image.img_to_array(image.load_img(images[0]))
+
+labels[0]
+
 for (img_path, label) in zip(images, labels):
-    # img = image.load_img(img_path)
-    x = image.img_to_array(img_path)
+    img = image.load_img(img_path)
+    x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     embeddings = embedder.embeddings(x)
     train_data.append(embeddings)
-    train_label += [label.argmax(1)]
+    train_label += [label]
 
     if count % 10000 == 0:
         print("Number of files done:", count)
@@ -33,8 +37,8 @@ for (img_path, label) in zip(images, labels):
 train_data = np.array(train_data)
 train_label = np.array(train_label)
 
-np.save("train_data_facenet_embeddings.npy", train_data)
-np.save("train_label_facenet_embeddings.npy", train_label)
+np.save("face_embeddings/train_data_facenet_embeddings.npy", train_data)
+np.save("face_embeddings/train_label_facenet_embeddings.npy", train_label)
 print("Files saved....")
 
 

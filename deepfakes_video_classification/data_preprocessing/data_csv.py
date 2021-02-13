@@ -1,3 +1,5 @@
+# !pip install pandas
+
 import pandas as pd
 import glob
 import os
@@ -6,8 +8,8 @@ from os import rename, listdir, rename, makedirs
 from random import shuffle
 # from sklearn.utils import shuffle
 
-abs_path = os.path.abspath(os.getcwd())
-train_path = ["train_faces_all/1", "train_faces_all/0"]
+abs_path = "/scratch/ysolanki/SiameseAkash/deepfakes_video_classification/train_face/"
+train_path = ["/scratch/ysolanki/SiameseAkash/deepfakes_video_classification/train_face/1", "/scratch/ysolanki/SiameseAkash/deepfakes_video_classification/train_face/0"]
 
 list_1 = [join(train_path[0], x) for x in listdir(train_path[0])]
 list_0 = [join(train_path[1], x) for x in listdir(train_path[1])]
@@ -24,15 +26,15 @@ labels = []
 counter = 0
 
 for x in vid_list:
-	img = glob.glob(join(abs_path, x, '*.jpg'))
-	img.sort(key=lambda f:int(''.join(filter(str.isdigit, f))))
-	images+=img[:25]
-	label = [k.split('/')[-3] for k in img]
-	labels+=label[:25]
+    img = glob.glob(join(abs_path, x, '*.jpg'))
+    img.sort(key=lambda f:int(''.join(filter(str.isdigit, f))))
+    images+=img[:25]
+    label = [k.split('/')[-3] for k in img]
+    labels+=label[:25]
 
-	if counter%100==0:
-		print("Number of files done:", counter)
-	counter+=1
+    if counter%100==0:
+        print("Number of files done:", counter)
+    counter+=1
 
 # print(images)
 # print(labels)
@@ -45,6 +47,14 @@ data = {
 df = pd.DataFrame(data)
 df.to_csv("train_faces_25frames.csv", index=False)
 
+
+import pandas as pd
+data = pd.read_csv("../train_face/train_faces_25frames.csv")
+print(data.loc[data['label'] == 1])
+
+# + active=""
+#
+# -
 
 # test_path = ['train_face_160/0', 'train_face_160/1']
 # list_1 = [join(test_path[0], x) for x in listdir(test_path[0])]

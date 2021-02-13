@@ -56,7 +56,7 @@ def ignore_warnings(*args, **kwargs):
 imageio.core.util._precision_warn = ignore_warnings
 
 # Create face detector
-mtcnn = MTCNN(margin=40, select_largest=False, post_process=False, device='cuda:0')
+mtcnn = MTCNN(margin=40, select_largest=False, post_process=False, device='cuda:1')
 
 def pairwise_distance(feature, squared=False):
 	"""Computes the pairwise distance matrix with numerical stability.
@@ -229,13 +229,12 @@ def create_base_network(image_input_shape, embedding_size):
 	return base_network
 
 
-if __name__ == "__main__":
 	# in case this scriot is called from another file, let's make sure it doesn't start training the network...
 	embedding_size = 64
 	input_image_shape = (512, )
-	test_data = pd.read_csv('ff++/test_vids_label.csv')
+	test_data = pd.read_csv('test_data/test_vids_label.csv')
 
-	# embedder = FaceNet()
+	embedder = FaceNet()
 
 	videos = test_data["vids_list"]
 	true_labels = test_data["label"]
@@ -246,7 +245,7 @@ if __name__ == "__main__":
 	testing_embeddings = create_base_network(input_image_shape,
 											 embedding_size=embedding_size)
 
-	model = load_model("triplets/triplets_semi_hard.hdf5",
+	model = load_model("triplets_semi_hard.hdf5",
 		custom_objects={'triplet_loss_adapted_from_tf':triplet_loss_adapted_from_tf})
 
 	# Grabbing the weights from the trained network
@@ -256,17 +255,24 @@ if __name__ == "__main__":
 		del weights 
 	print("Model Loaded...")
 
+# +
+if __name__ == "__main__":
+
+
 	y_predictions = []
 	y_probabilities = []
+	test_data = []
 	c= 0
 
 	# test_data = np.load("test_embs.npy")
-	test_label = np.load("test_labels.npy")
-	y_test_onehot = utils.to_categorical(test_label)
+# 	test_label = np.load("test_labels.npy")
+	y_test_onehot = utils.to_categorical(true_labels)
 
-	index_0 = np.where(test_label==0)
-	index_1 = np.where(test_label==1)
-
+# 	index_0 = np.where(test_label==0)
+# 	index_1 = np.where(test_label==1)
+	count = 1
+	rcount = 0
+	fcount = 0
 	for i in videos[:]:
 		cap = cv2.VideoCapture(i)
 		batches = []
@@ -279,8 +285,10 @@ if __name__ == "__main__":
 				break		
 			frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 			frame = Image.fromarray(frame)
-			face = mtcnn(frame)
-			
+			try:
+				face = mtcnn(frame)
+			except:                
+				print("No face found")
 			try:
 				face = face.permute(1, 2, 0).int().numpy()
 				batches.append(face)
@@ -289,18 +297,23 @@ if __name__ == "__main__":
 			mounting+=1
 
 		batches = np.asarray(batches).astype('float32')
-		print(batches.shape)
+# 		print(batches.shape)
 		test_data.append(batches)
 
 		embeddings = embedder.embeddings(batches)
-		x_test_after = testing_embeddings.predict(embeddings)
-		x_test = testing_embeddings.predict(x_test_after)
+		x_test = testing_embeddings.predict(embeddings)
+# 		print('x_test_after is ', x_test_after)
+        
+# 		x_test = testing_embeddings.predict(x_test_after)
+# 		print('x_test is ', x_test)
+        
 		
 		# print("Embeddings after training")
 		sgd = linear_model.SGDClassifier(max_iter=50, tol=None)
-		with open('triplets/sgd_classifier.pkl', 'rb') as fid:
+		with open('sgd_classifier.pkl', 'rb') as fid:
 			sgd_loaded = pickle.load(fid)
 		y_pred = sgd_loaded.predict(x_test)
+
 		y_probabs = sgd_loaded.predict_proba(x_test)
 
 		pred_mean = np.mean(y_pred, axis=0)
@@ -308,15 +321,22 @@ if __name__ == "__main__":
 		probab_mean = 1 - probab_mean
 
 		y_probabilities +=[probab_mean]
-		# print(pred_mean)
+		print('Predicting for video: ', i)
+		print(y_pred)
 		if pred_mean>0.5:
-			y_predictions+=[0]
-		else:
 			y_predictions+=[1]
+			print("Video ", count, " is real")
+			rcount += 1
+		else:
+			y_predictions+=[0]
+			print("Video ", count, " is fake")
+			fcount += 1
+		count+=1
 
+	print("Count of real: ", rcount, "  fake: ", fcount)
 	y_probabilities = np.array(y_probabilities)
 	# print(y_probabilities[:, 1])
-	fpr, tpr, threshold = roc_curve(test_label, y_probabilities[:, 1])
+	fpr, tpr, threshold = roc_curve(true_labels, y_probabilities[:, 1])
 	fnr = 1 - tpr
 	eer_threshold = threshold[np.nanargmin(np.absolute((fnr - fpr)))]
 	# EER = fpr[np.nanargmin(np.absolute((fnr - fpr)))]
@@ -337,9 +357,10 @@ if __name__ == "__main__":
 	plt.title('ROC Curve of kNN')
 	plt.savefig("AUC-ROC Score")
 	
-	print("Accuracy:", accuracy_score(test_label, y_predictions))
-	print("Precision:", precision_score(test_label, y_predictions))
-	print("Recall:", recall_score(test_label, y_predictions))
-	print("F1 score:", f1_score(test_label, y_predictions))
+	print("Accuracy:", accuracy_score(true_labels, y_predictions))
+	print("Precision:", precision_score(true_labels, y_predictions))
+	print("Recall:", recall_score(true_labels, y_predictions))
+	print("F1 score:", f1_score(true_labels, y_predictions))
+# -
 
 

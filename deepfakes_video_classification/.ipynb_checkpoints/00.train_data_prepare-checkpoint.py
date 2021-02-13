@@ -1,4 +1,5 @@
-#trian the data
+pip install keras
+
 import cv2
 import argparse
 import numpy as np
@@ -34,6 +35,15 @@ list_0 = [join(train_path[1], x) for x in listdir(train_path[1])]
 
 c = 0
 
+cslmdkm
+
+
+class Args():
+    frames_per_video = 25
+    img_size = 160
+args = Args()
+
+# +
 for i in range(len(list_0) // len(list_1)):
     vid_list = list_1 + list_0[i * (len(list_1)): (i + 1) * (len(list_1))]
     shuffle(vid_list)
@@ -59,7 +69,7 @@ for i in range(len(list_0) // len(list_1)):
             print("Number of files done:", counter)
         counter += 1
 
-    print("Number of lists done --> {}".format(files_name[i]))
+#     print("Number of lists done --> {}".format(files_name[i]))
 
     for j, k in zip(images, labels):
 
@@ -80,7 +90,12 @@ for i in range(len(list_0) // len(list_1)):
     train_label = np_utils.to_categorical(train_label)
     print(train_data.shape, train_label.shape)
 
-    np.save("train_data_" + str(args.frames_per_video) + "_c40.npy", train_data)
-    np.save("train_label_" + str(args.frames_per_video) + "_c40.npy", train_label)
+    np.save("train_data/train_data_" + str(args.frames_per_video) + "_c40.npy", train_data)
+    np.save("train_data/train_label_" + str(args.frames_per_video) + "_c40.npy", train_label)
 
-    print("Files saved number....", files_name[i])
+#     print("Files saved number....", files_name[i])
+# -
+
+print(len(list_0) // len(list_1))
+
+

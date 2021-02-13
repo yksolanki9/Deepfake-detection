@@ -1,0 +1,5 @@
+deepfakes_video_classification/train_face
+deepfakes_video_classification/train_frames
+deepfakes_video_classification/face_embeddings
+deepfakes_video_classification/.ipynb_checkpoints
+deepfakes_video_classification/data_preprocessing/.ipynb_checkpoints
