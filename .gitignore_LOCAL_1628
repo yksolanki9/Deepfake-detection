@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 deepfakes_video_classification/train_face
 deepfakes_video_classification/train_frames
 deepfakes_video_classification/face_embeddings
@@ -7,11 +6,3 @@ deepfakes_video_classification/data_preprocessing/.ipynb_checkpoints
 deepfakes_video_classification/train_data
 deepfakes_video_classification/test_data
 deepfakes_video_classification/evaluate_fb
-=======
-**/.ipynb_checkpoints 
-deepfakes_video_classification/evaluate_fb 
-deepfakes_video_classification/face_embeddings
-deepfakes_video_classification/train_data
-deepfakes_video_classification/train_face
-deepfakes_video_classification/train_frames
->>>>>>> dev-model
