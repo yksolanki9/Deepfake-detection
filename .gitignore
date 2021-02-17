@@ -5,3 +5,4 @@ deepfakes_video_classification/train_data
 deepfakes_video_classification/train_face
 deepfakes_video_classification/train_frames
 **/.nfs*
+**/*.npz
