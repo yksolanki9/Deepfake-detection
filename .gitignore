@@ -6,4 +6,8 @@ deepfakes_video_classification/train_face
 deepfakes_video_classification/train_frames
 **/.nfs*
 **/*.npz
+**/*.npy
 **/__pycache__/
+TestVideos/
+output/
+**/*.sav
