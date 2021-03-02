@@ -11,3 +11,4 @@ deepfakes_video_classification/train_frames/
 TestVideos/
 output/
 **/*.sav
+**/*.h5
